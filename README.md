@@ -81,16 +81,9 @@ http://localhost:3000
 # Default login: admin / admin
 
 🧩 Grafana Dashboards
-Import dashboards manually or mount them using provisioning for:
-
-MySQL Monitoring
-
-MongoDB Replication & Performance
-
-Redis Usage
-
-Node System Overview
-
+![Grafana Dashboard](images/mysql-dashboard.png)
+![Grafana Dashboard](images/mongo-dashboard.png)
+![Grafana Dashboard](images/redis-dashboard.png)
 📜 License
 This project is licensed under the MIT License.
 
