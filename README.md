@@ -1,103 +1,102 @@
-# 📊 Multi-Database Monitoring Stack with Prometheus & Grafana
+# 📡 Multi-Database Monitoring Stack with Prometheus & Grafana
 
-This project sets up a full monitoring stack using Docker Compose for:
+This project sets up a comprehensive monitoring system for **MySQL**, **MongoDB**, **Redis**, and **host system metrics** using **Prometheus**, **Grafana**, and exporters — all containerized via Docker Compose.
 
-- 🐬 **MySQL Master-Slave Replication**
-- 🍃 **MongoDB Replica Set (Primary-Secondary-Secondary)**
-- 🧠 **Redis Server**
-- 📈 **Prometheus and Grafana** for real-time observability
-- 📡 **Node Exporter**, **MySQL Exporter**, **MongoDB Exporter**, and **Redis Exporter**
+## 🐳 Stack Overview
 
----
+- ⚙️ Docker Compose-based setup
+- 📈 Grafana dashboards for real-time visualization
+- 📦 Prometheus to scrape and store metrics
+- 📊 Exporters for MySQL, MongoDB, Redis, and system metrics
 
-## 🔧 Tech Stack
+## 🗃️ Databases Configured
 
-| Component        | Description                     |
-|------------------|---------------------------------|
-| `mysql-master`   | Primary MySQL node              |
-| `mysql-slave`    | Replicating slave node          |
-| `mongo1/2/3`     | MongoDB replica set             |
-| `redis`          | In-memory key-value store       |
-| `prometheus`     | Metrics scraping + storage      |
-| `grafana`        | Metrics visualization           |
-| `node-exporter`  | System-level metrics            |
-| `mysqld-exporter`| MySQL metrics                   |
-| `mongodb-exporter`| MongoDB metrics                |
-| `redis-exporter` | Redis metrics                   |
+### 🔵 MySQL (Master-Slave Replication)
+- MySQL 5.7 containers with replication setup
+- Exporter: `mysqld-exporter`
 
----
+### 🟢 MongoDB (Primary-Secondary Replica Set)
+- MongoDB 6.0 with internal authentication and replication
+- Exporter: `mongodb-exporter`
 
----
+### 🔴 Redis
+- Standalone Redis instance
+- Exporter: `redis-exporter`
 
-## 🚀 Getting Started
+### 🖥️ Node (Host Metrics)
+- Exporter: `node-exporter` for system-level metrics
 
-### 1. Clone the repository
+## 📊 Metrics Monitored
+
+### ✅ MySQL (via mysqld-exporter)
+- Replication lag  
+- Uptime  
+- Threads & connections  
+- Queries per second  
+
+### ✅ MongoDB (via mongodb-exporter)
+- Replica set state  
+- Memory and connections  
+- Operations & cursors  
+
+### ✅ Redis (via redis-exporter)
+- Memory usage  
+- Keyspace hits/misses  
+- Clients, CPU  
+
+### ✅ Host (via node-exporter)
+- CPU, Memory, Disk  
+- System uptime  
+- Network I/O  
+
+## 📂 Project Structure
+
+```plaintext
+multi-db-monitoring-stack/
+├── docker-compose.yml
+├── prometheus/
+│   └── prometheus.yml
+├── grafana/
+│   └── dashboards/
+│       └── [custom.json or prebuilt dashboards]
+├── mysql/
+│   └── master/
+│       └── my.cnf
+│   └── slave/
+│       └── my.cnf
+├── mongodb/
+│   └── setup.js
+├── README.md
+```
+🚀 Getting Started
+# Clone the repo
 git clone https://github.com/bhattprerna/multi-db-monitoring-stack.git
 cd multi-db-monitoring-stack
 
-**2. Launch the full stack:**
+# Start services
 docker compose up -d
 
-3. Access the services:
-📊 Grafana → http://localhost:3000
-Default credentials: admin / admin
+# Access Grafana at:
+http://localhost:3000
+# Default login: admin / admin
 
-🔍 Prometheus → http://localhost:9090
+🧩 Grafana Dashboards
+Import dashboards manually or mount them using provisioning for:
 
-📊 Metrics Monitored
+MySQL Monitoring
 
-✅ MySQL (via mysqld-exporter)
-Replication lag
+MongoDB Replication & Performance
 
-Uptime
+Redis Usage
 
-Threads & connections
+Node System Overview
 
-Queries per second
+📜 License
+This project is licensed under the MIT License.
 
-✅ MongoDB (via mongodb-exporter)
-Replica set state
-
-Memory and connections
-
-Operations & cursors
-
-✅ Redis (via redis-exporter)
-Memory usage
-
-Keyspace hits/misses
-
-Clients
-
-CPU
-
-✅ Host (via node-exporter)
-CPU
-
-Memory
-
-Disk
-
-System uptime
-
-Network I/O
-
-🛠 MongoDB Replica Set Initialization
-
-After starting containers, initialize the replica set from mongo1:
-rs.initiate({
-  _id: "rs0",
-  members: [
-    { _id: 0, host: "mongo1:27017" },
-    { _id: 1, host: "mongo2:27017" },
-    { _id: 2, host: "mongo3:27017" }
-  ]
-})
-
-📸 Dashboard Previews
-
-🧑‍💻 Author
+🙋‍♀️ Author
 Prerna Bhatt
-💼 DevOps Enthusiast
+💼 DevOps Enthusiast | Cloud | Automation
 🔗 LinkedIn
-📦 GitHub
+📁 More Projects
+
