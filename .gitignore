@@ -1,0 +1,15 @@
+# Ignore MongoDB data folders
+mongodb/mongo1-data/
+mongodb/mongo2-data/
+mongodb/mongo3-data/
+
+# Ignore compiled and runtime files
+*.log
+*.pid
+*.sock
+*.dbshell
+*.swp
+
+# Ignore Docker volumes
+**/diagnostic.data/
+**/journal/

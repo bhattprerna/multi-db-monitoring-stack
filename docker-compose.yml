@@ -1,0 +1,174 @@
+version: '3.8'
+
+services:
+  mysql-master:
+    image: mysql:5.7
+    container_name: mysql-master
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testdb
+    volumes:
+      - ./mysql/master/my.cnf:/etc/mysql/my.cnf
+      - ./mysql/master/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3307:3306"
+    networks:
+      - monitoring-net
+
+  mysql-slave:
+    image: mysql:5.7
+    container_name: mysql-slave
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./mysql/slave/my.cnf:/etc/mysql/my.cnf
+    depends_on:
+      - mysql-master
+    ports:
+      - "3308:3306"
+    networks:
+      - monitoring-net
+
+  mongo1:
+    image: mongo:4.4
+    container_name: mongo1
+    hostname: mongo1
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./mongodb/mongo1-data:/data/db
+      - ./mongodb/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+#      - ./mongodb/keyfile/mongo-keyfile:/etc/mongo-keyfile:ro
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+#    environment:
+#      MONGO_INITDB_ROOT_USERNAME: admin
+#      MONGO_INITDB_ROOT_PASSWORD: admin
+#    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--keyFile", "/etc/mongo-keyfile"]
+    networks:
+      - monitoring-net
+
+  mongo2:
+    image: mongo:4.4
+    container_name: mongo2
+    hostname: mongo2
+    restart: always
+    ports:
+      - "27018:27017"
+    volumes:
+      - ./mongodb/mongo2-data:/data/db
+#      - ./mongodb/keyfile/mongo-keyfile:/etc/mongo-keyfile:ro
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    networks:
+      - monitoring-net
+
+  mongo3:
+    image: mongo:4.4
+    container_name: mongo3
+    hostname: mongo3
+    restart: always
+    ports:
+      - "27019:27017"
+    volumes:
+      - ./mongodb/mongo3-data:/data/db
+#      - ./mongodb/keyfile/mongo-keyfile:/etc/mongo-keyfile:ro
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all",]
+    networks:
+      - monitoring-net
+
+  mysqld-exporter:
+    image: prom/mysqld-exporter
+    container_name: mysqld-exporter
+    command:
+      - "--config.my-cnf=/etc/mysql_exporter/.my.cnf"
+    volumes:
+      - ./my.cnf:/etc/mysql_exporter/.my.cnf:ro
+    ports:
+      - "9104:9104"
+    depends_on:
+      - mysql-master
+    networks:
+      - monitoring-net
+
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.40.0
+    container_name: mongodb-exporter
+    environment:
+#      MONGODB_URI: mongodb://admin:admin@mongo1:27017/admin
+      MONGODB_URI: "mongodb://mongo1:27017,mongo2:27017,mongo3:27017/?replicaSet=rs0"
+    command: ["--collect-all", "--compatible-mode", "--discovering-mode"]
+    ports:
+      - "9216:9216"
+    depends_on:
+      - mongo1
+    networks:
+      - monitoring-net
+
+  redis:
+    image: redis:6.2
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - monitoring-net
+
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: redis-exporter
+    restart: unless-stopped
+    environment:
+      - REDIS_ADDR=redis://redis:6379
+    ports:
+      - "9121:9121"
+    depends_on:
+      - redis
+    networks:
+      - monitoring-net
+
+
+  node-exporter:
+    image: prom/node-exporter
+    container_name: node-exporter
+    restart: always
+    ports:
+      - "9100:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--path.rootfs=/rootfs'
+    networks:
+      - monitoring-net
+
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    depends_on:
+      - mysqld-exporter
+      - mongodb-exporter
+    networks:
+      - monitoring-net
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring-net
+
+networks:
+  monitoring-net:
